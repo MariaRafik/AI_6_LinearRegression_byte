@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score,mean_absolute_error
 import warnings
 import pickle
-import matlplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 
 df=pd.read_csv('Housing.csv')
