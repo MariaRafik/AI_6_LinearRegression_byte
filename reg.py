@@ -3,6 +3,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score,mean_absolute_error
 import warnings
+import pickle
+import matlplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 
 df=pd.read_csv('Housing.csv')
@@ -34,6 +36,19 @@ while True:
     bath_val=float(data[2])
     story_val=float(data[3])
     park_val=float(data[4])
-
     predicton=model.predict([[area_val,bed_val,bath_val,story_val,park_val]])[0]
     print(f"PREDICTED HOUSE PRICE: ${predicton:,.2f}\n")
+
+with open('housing_model.pkl', 'wb') as f:
+    pickle.dump(model, f)
+plt.figure(figsize=(8, 5))
+residuals=y_test - y_pred
+plt.scatter(y_pred, residuals, alpha=0.5, color='blue')
+plt.axhline(y=0, color='red', linestyle='--')
+plt.xlabel("Predicted House Prices")
+plt.ylabel("Residuals (Error)")
+plt.title("Residual Plot for Housing Regression")
+plt.savefig('residual_plot.png', bbox_inches='tight')
+sample_results=pd.DataFrame({'Actual Price': y_test[:5], 'Predicted Price': y_pred[:5]})
+sample_results['Difference'] = sample_results['Actual Price'] - sample_results['Predicted Price']
+print(sample_results)
