@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>House Price Predictor — Regression Demo</title>
+  
+  <!-- Load the PyScript engine -->
+  <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+  <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+  
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #fafafa; color: #171717; }
+    .shell { max-width: 1100px; margin: 0 auto; padding: 28px 24px 80px; }
+    header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e5e5; padding-bottom: 24px; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 16px; font-weight: 750; letter-spacing: -.04em; }
+    .mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: #3730a3; color: white; font-size: 18px; }
+    .badge { border: 1px solid #c7d2fe; border-radius: 30px; padding: 7px 12px; color: #4338ca; font-size: 12px; font-weight: 650; background: #e0e7ff; }
+    main { padding-top: 74px; }
+    .eyebrow { font-size: 12px; color: #4f46e5; letter-spacing: .14em; font-weight: 800; text-transform: uppercase; }
+    h1 { max-width: 750px; font-size: clamp(40px, 6vw, 70px); letter-spacing: -.065em; line-height: 1.07; margin: 17px 0 18px; }
+    .intro { color: #525252; max-width: 570px; font-size: 17px; line-height: 1.65; margin: 0 0 42px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(260px, 1fr); gap: 22px; align-items: start; }
+    .card { background: white; border: 1px solid #e5e5e5; border-radius: 18px; box-shadow: 0 14px 40px #00000008; padding: 28px; }
+    .card h2 { font-size: 18px; letter-spacing: -.03em; margin: 0 0 8px; }
+    .hint { margin: 0 0 22px; color: #737373; font-size: 14px; line-height: 1.5; }
+    
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .full-width { grid-column: span 2; }
+    
+    label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    input { display: block; width: 100%; border: 1px solid #d4d4d8; background: #fafafa; border-radius: 11px; padding: 13px; font: inherit; font-size: 14px; color: #171717; }
+    input:focus { outline: 3px solid #c7d2fe; border-color: #4f46e5; }
+    
+    button { margin-top: 18px; background: #3730a3; color: white; border: 0; border-radius: 10px; padding: 14px 21px; font: inherit; font-weight: 700; cursor: pointer; width: 100%; }
+    button:disabled { background: #a3a3a3; cursor: not-allowed; }
+    button:hover:not(:disabled) { background: #312e81; }
+    
+    .result { margin-top: 22px; padding: 24px; border-radius: 12px; background: #ecfdf5; border: 1px solid #a7f3d0; display: none; text-align: center; }
+    .result p { margin: 0; color: #065f46; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .score { font-size: 38px; font-weight: 800; letter-spacing: -.05em; color: #047857; margin-top: 5px; }
+    
+    .metric { border-top: 1px solid #f5f5f5; padding: 15px 0; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: #525252; }
+    .metric strong { color: #171717; font-size: 17px; }
+    .small { color: #737373; font-size: 12px; line-height: 1.55; margin: 17px 0 0; }
+    @media (max-width: 760px) { .input-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="mark" aria-hidden="true">⌂</span> Property Check</div>
+      <span class="badge">LIVE REGRESSION MODEL</span>
+    </header>
+    <main>
+      <div class="eyebrow">Valuation Intelligence / 06</div>
+      <h1>Data-driven property estimates.</h1>
+      <p class="intro">Enter a home's specifications below to see its estimated market value. This multiple linear regression model was trained on the included housing dataset.</p>
+      
+      <div class="grid">
+        <!-- LEFT CARD: Inputs -->
+        <section class="card">
+          <h2>Property Details</h2>
+          <p class="hint">Adjust the parameters to instantly recalculate the property value.</p>
+          
+          <div class="input-grid">
+            <div class="full-width">
+              <label>Total Area (sq ft)</label>
+              <input type="number" id="area" value="7420" required>
+            </div>
+            <div>
+              <label>Bedrooms</label>
+              <input type="number" id="beds" value="4" required>
+            </div>
+            <div>
+              <label>Bathrooms</label>
+              <input type="number" id="baths" value="2" required>
+            </div>
+            <div>
+              <label>Stories</label>
+              <input type="number" id="stories" value="3" required>
+            </div>
+            <div>
+              <label>Parking Spaces</label>
+              <input type="number" id="parking" value="2" required>
+            </div>
+          </div>
+          
+          <button id="predict-btn" disabled>⚙️ Loading Linear Regression Model...</button>
+          
+          <div id="result-box" class="result">
+            <p>Estimated Market Value</p>
+            <div class="score" id="price-val"></div>
+          </div>
+        </section>
+        
+        <!-- RIGHT CARD: Metrics -->
+        <aside class="card">
+          <h2>Model Performance</h2>
+          <p class="hint">Trained on an 80/20 data split using Scikit-Learn.</p>
+          
+          <div class="metric"><span>R-Squared (Fit)</span><strong id="metric-r2">--%</strong></div>
+          <div class="metric"><span>Mean Absolute Error</span><strong id="metric-mae">$--</strong></div>
+          
+          <p class="small">Demo only. Valuations are statistical estimates and should not be used for real estate transactions.</p>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <py-config>
+    packages = ["pandas", "scikit-learn", "numpy"]
+    [[fetch]]
+    files = ["./Housing.csv", "./reg.py"]
+  </py-config>
+
+  <script type="py">
+import builtins
+import traceback
+from pyscript import document
+from sklearn.metrics import r2_score, mean_absolute_error
+
+reg_vars = {}
+global_model = None
+
+try:
+    # 1. HACK THE INPUT FUNCTION
+    class StopLoop(Exception): pass
+    def mock_input(prompt=""):
+        raise StopLoop()
+    builtins.input = mock_input
+
+    # 2. RUN YOUR UNTOUCHED SCRIPT
+    with open("reg.py", "r", encoding="utf-8") as f:
+        code = f.read()
+
+    try:
+        exec(code, reg_vars)
+    except StopLoop:
+        pass 
+
+    # 3. GRAB THE MODEL AND DATA
+    global_model = reg_vars.get('model')
+    y_test = reg_vars.get('y_test')
+    
+    # Calculate y_pred in case it wasn't saved perfectly in the script
+    X_test = reg_vars.get('X_test')
+    y_pred = global_model.predict(X_test)
+
+    # 4. POPULATE METRICS
+    r2 = r2_score(y_test, y_pred) * 100
+    mae = mean_absolute_error(y_test, y_pred)
+
+    document.getElementById("metric-r2").innerText = f"{r2:.1f}%"
+    document.getElementById("metric-mae").innerText = f"${mae:,.0f}"
+
+    # 5. ENABLE THE BUTTON
+    btn = document.getElementById("predict-btn")
+    btn.innerText = "Calculate Estimate →"
+    btn.disabled = False
+    btn.style.backgroundColor = "#3730a3"
+
+except Exception as e:
+    btn = document.getElementById("predict-btn")
+    btn.innerText = f"❌ Error: {str(e)}"
+    btn.style.backgroundColor = "#aa392e"
+    print(traceback.format_exc())
+
+# 6. THE PREDICTION FUNCTION
+def predict_price(event):
+    area = float(document.getElementById("area").value)
+    beds = float(document.getElementById("beds").value)
+    baths = float(document.getElementById("baths").value)
+    stories = float(document.getElementById("stories").value)
+    parking = float(document.getElementById("parking").value)
+    
+    # Run the user's inputs through the linear regression model
+    prediction = global_model.predict([[area, beds, baths, stories, parking]])[0]
+    
+    res = document.getElementById("result-box")
+    res.style.display = "block"
+    document.getElementById("price-val").innerText = f"${prediction:,.2f}"
+
+# Connect HTML button to Python
+document.getElementById("predict-btn").onclick = predict_price
+  </script>
+</body>
+</html>
