@@ -1,4 +1,4 @@
-# Task 6 — Linear Regression: House Price Prediction
+# B.Y.T.E AI internship Task 6 — Linear Regression: House Price Prediction
 **The "Housing Crash" Simulator**
 
 ## Project Overview
